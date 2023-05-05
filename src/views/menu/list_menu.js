@@ -13,10 +13,12 @@ import {
   CTableRow,
   CSpinner,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
 import { API_URL } from '../../utils/constans'
 import axios from 'axios'
 import ShowEntriesSearch from 'src/components/dataTables/ShowEntriesSearch'
 import CustomPagination from 'src/components/dataTables/CustomPagination'
+import { cilSortAscending, cilSortDescending } from '@coreui/icons'
 
 export default class list_menu extends Component {
   constructor(props) {
@@ -24,16 +26,9 @@ export default class list_menu extends Component {
 
     this.state = {
       menus: [],
-      column: [
-        { key: 'no', label: 'No' },
-        { key: 'name', label: 'Name' },
-        { key: 'link', label: 'Link' },
-        { key: 'icon', label: 'Icon' },
-        { key: 'status', label: 'Status' },
-        { key: 'action', label: 'Action' },
-      ],
+      column: [],
       sortColumn: '',
-      sortDirection: '',
+      sortDirection: 'desc',
       currentPage: 1,
       totalData: 0,
       entriesToShow: '10',
@@ -43,6 +38,7 @@ export default class list_menu extends Component {
   }
 
   componentDidMount() {
+    this.fetchDataHeaderTable()
     this.fetchDataMenus()
   }
 
@@ -62,14 +58,20 @@ export default class list_menu extends Component {
     if (prevState.totalData !== this.state.totalData) {
       this.fetchDataMenus()
     }
+
+    if (prevState.sortDirection !== this.state.sortDirection) {
+      this.fetchDataMenus()
+    }
   }
 
   fetchDataMenus = () => {
     const limit = this.state.entriesToShow
     const page = this.state.currentPage
     const search = this.state.searchQuery
+    const sortColumn = this.state.sortColumn
+    const sortDirection = this.state.sortDirection
     axios
-      .get(API_URL + `menu?limit=${limit}&page=${page}&param=${search}`)
+      .get(API_URL + `menu?limit=${limit}&page=${page}&param=${search}&sortColumn=${sortColumn}&sortDirection=${sortDirection}`)
       .then((res) => {
         const menus = res.data.data
         this.setState({ menus })
@@ -83,19 +85,24 @@ export default class list_menu extends Component {
       })
   }
 
-  // handleSort = (columnKey) => {
-  //   if (this.state.sortColumn === columnKey) {
-  //     // if the same column is clicked again, toggle the sort direction
-  //     const sortDirection = this.state.sortDirection === 'asc' ? 'desc' : 'asc'
-  //     this.setState(sortDirection)
-  //   } else {
-  //     // if a different column is clicked, set it as the new sorting column
-  //     const sortColumn = columnKey
-  //     this.setState({ sortColumn })
-  //     const sortDirection = 'asc'
-  //     this.setState({ sortDirection })
-  //   }
-  // }
+  fetchDataHeaderTable = () => {
+    const column = [
+      { key: 'menu_id', label: 'No' },
+      { key: 'name_menu', label: 'Name' },
+      { key: 'link', label: 'Link' },
+      { key: 'icon', label: 'Icon' },
+      { key: 'status', label: 'Status' },
+      { key: '', label: 'Action'},
+    ]
+    this.setState({ column })
+  }
+
+  handleSort = (columnKey) => {
+    const sortColumn = columnKey
+    this.setState({ sortColumn })
+    const sortDirection = this.state.sortDirection === 'asc' ? 'desc' : 'asc'
+    this.setState({ sortDirection })
+  }
 
   handleEntriesChange = (event) => {
     const entriesToShow = event.target.value
@@ -114,7 +121,7 @@ export default class list_menu extends Component {
   }
 
   render() {
-    const { menus, entriesToShow, searchQuery, loading, totalData, currentPage, column, sortColumn, sortDirection } = this.state
+    const { menus, entriesToShow, searchQuery, loading, totalData, currentPage, column, sortDirection } = this.state
     const startIndex = (currentPage - 1) * entriesToShow
     return (
       <div>
@@ -145,10 +152,10 @@ export default class list_menu extends Component {
                           {column.map((column) => (
                             <CTableHeaderCell
                               key={column.key}
-                              // onClick={() => this.handleSort(column.key)}
-                              className={sortColumn === column.key ? `sort-${sortDirection}` : ''}
+                              onClick={() => this.handleSort(column.key)}
                             >
                               {column.label}
+                              <CIcon icon={sortDirection === 'asc' ? cilSortDescending : cilSortAscending} size="sm" onClick={() => this.handleSort(column.key)} style={{ cursor: 'pointer' }} />
                             </CTableHeaderCell>
                           ))}
                         </CTableRow>
