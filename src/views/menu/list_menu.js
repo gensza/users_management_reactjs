@@ -12,13 +12,15 @@ import {
   CTableHeaderCell,
   CTableRow,
   CSpinner,
+  CBadge,
+  CButton,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { API_URL } from '../../utils/constans'
 import axios from 'axios'
 import ShowEntriesSearch from 'src/components/dataTables/ShowEntriesSearch'
 import CustomPagination from 'src/components/dataTables/CustomPagination'
-import { cilSortAscending, cilSortDescending } from '@coreui/icons'
+import { cilPencil, cilSortAscending, cilSortDescending } from '@coreui/icons'
 
 export default class list_menu extends Component {
   constructor(props) {
@@ -27,8 +29,8 @@ export default class list_menu extends Component {
     this.state = {
       menus: [],
       column: [],
-      sortColumn: '',
-      sortDirection: 'desc',
+      sortColumn: 'menu_id',
+      sortDirection: 'asc',
       currentPage: 1,
       totalData: 0,
       entriesToShow: '10',
@@ -71,7 +73,10 @@ export default class list_menu extends Component {
     const sortColumn = this.state.sortColumn
     const sortDirection = this.state.sortDirection
     axios
-      .get(API_URL + `menu?limit=${limit}&page=${page}&param=${search}&sortColumn=${sortColumn}&sortDirection=${sortDirection}`)
+      .get(
+        API_URL +
+          `menu?limit=${limit}&page=${page}&param=${search}&sortColumn=${sortColumn}&sortDirection=${sortDirection}`,
+      )
       .then((res) => {
         const menus = res.data.data
         this.setState({ menus })
@@ -92,7 +97,7 @@ export default class list_menu extends Component {
       { key: 'link', label: 'Link' },
       { key: 'icon', label: 'Icon' },
       { key: 'status', label: 'Status' },
-      { key: '', label: 'Action'},
+      { key: '', label: 'Action' },
     ]
     this.setState({ column })
   }
@@ -121,7 +126,16 @@ export default class list_menu extends Component {
   }
 
   render() {
-    const { menus, entriesToShow, searchQuery, loading, totalData, currentPage, column, sortDirection } = this.state
+    const {
+      menus,
+      entriesToShow,
+      searchQuery,
+      loading,
+      totalData,
+      currentPage,
+      column,
+      sortDirection,
+    } = this.state
     const startIndex = (currentPage - 1) * entriesToShow
     return (
       <div>
@@ -155,7 +169,14 @@ export default class list_menu extends Component {
                               onClick={() => this.handleSort(column.key)}
                             >
                               {column.label}
-                              <CIcon icon={sortDirection === 'asc' ? cilSortDescending : cilSortAscending} size="sm" onClick={() => this.handleSort(column.key)} style={{ cursor: 'pointer' }} />
+                              <CIcon
+                                icon={
+                                  sortDirection === 'asc' ? cilSortDescending : cilSortAscending
+                                }
+                                size="sm"
+                                onClick={() => this.handleSort(column.key)}
+                                style={{ cursor: 'pointer' }}
+                              />
                             </CTableHeaderCell>
                           ))}
                         </CTableRow>
@@ -170,8 +191,21 @@ export default class list_menu extends Component {
                               <CTableDataCell>{item.name_menu}</CTableDataCell>
                               <CTableDataCell>{item.link}</CTableDataCell>
                               <CTableDataCell>{item.icon}</CTableDataCell>
-                              <CTableDataCell>{item.status}</CTableDataCell>
-                              <CTableDataCell>#</CTableDataCell>
+                              <CTableDataCell>
+                                <CBadge color={`${item.status === 1 ? 'success' : 'danger'}`}>
+                                  {item.status === 1 ? 'Active' : 'Non Active'}
+                                </CBadge>
+                              </CTableDataCell>
+                              <CTableDataCell>
+                                <CButton color="warning" size='sm'>
+                                <CIcon
+                                icon={
+                                  cilPencil
+                                }
+                                size="sm"
+                              />
+                                </CButton>
+                              </CTableDataCell>
                             </CTableRow>
                           ))}
                       </CTableBody>
